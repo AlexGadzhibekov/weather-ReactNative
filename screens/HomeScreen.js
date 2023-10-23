@@ -16,59 +16,51 @@ import { CalendarDaysIcon } from "react-native-heroicons/solid";
 import { debounce } from "lodash";
 import { fetchLocations, fetchWeatherForecast } from "../api/weather";
 import { weatherImages } from "../const";
-import * as Progress from 'react-native-progress';
+import * as Progress from "react-native-progress";
 import { getData, storeData } from "../utils/asyncStorage";
-
-// import SafeAreaView from "../SafeAreaView/SafeAreaView";
 
 export default function HomeScreen() {
   const [showSearch, toggleSearch] = useState(false);
   const [locations, setLocations] = useState([]);
   const [weather, setWeather] = useState({});
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(true);
 
   const handleSearch = (value) => {
-    //console.log("value: ", value);
     if (value.length > 2) {
       fetchLocations({ cityName: value }).then((data) => {
-        //console.log('got locations: ', data)
         setLocations(data);
       });
     }
   };
 
   const handleLocation = (loc) => {
-    //console.log("location: ", loc);
     setLoading(true);
     toggleSearch(false);
     setLocations([]);
     fetchWeatherForecast({
       cityName: loc.name,
-      days: '7'
+      days: "7",
     }).then((data) => {
       setLoading(false);
       setWeather(data);
-      storeData('city',loc.name);
-      //console.log("got forecast: ", data);
+      storeData("city", loc.name);
     });
   };
-
-
 
   useEffect(() => {
     fetchMyWeatherData();
   }, []);
 
   const fetchMyWeatherData = async () => {
-    let myCity = await getData('city');
-    let cityName = 'Islamabad';
-    if(myCity) cityName = myCity;
+    let myCity = await getData("city");
+    let cityName = "Islamabad";
+    if (myCity) cityName = myCity;
     fetchWeatherForecast({
       cityName,
       days: "7",
     }).then((data) => {
       setWeather(data);
-      setLoading(false)
+      setLoading(false);
     });
   };
   const handleTextDebounce = useCallback(debounce(handleSearch, 1200), []);
@@ -81,139 +73,131 @@ export default function HomeScreen() {
       <Image
         blurRadius={70}
         source={require("../assets/images/bg.png")}
-        style={styles.backg}
+        style={styles.backImage}
       />
 
-{loading?(
-<View style={styles.loading}>
-  {/* <Text style={styles.loadingTxt}>Loading...</Text> */}
-  <Progress.CircleSnail thickness={10} size={140} color="#0bb3b2"  />
-</View>
-):(
-  <SafeAreaView style={{ flex: 1 }}>
-  {/* search section */}
-  <View style={styles.seach}>
-    <View style={styles.inputSearch}>
-      {showSearch ? (
-        <TextInput
-          onChangeText={handleTextDebounce}
-          placeholder="Search city"
-          placeholderTextColor={"lightgray"}
-          style={styles.input}
-        />
-      ) : null}
+      {loading ? (
+        <View style={styles.loadingScreen}>
+          <Text style={styles.loadingTxt}>Loading...</Text>
+          <Progress.CircleSnail thickness={10} size={140} color="#0bb3b2" />
+        </View>
+      ) : (
+        <SafeAreaView style={{ flex: 1 }}>
+          <View style={styles.search}>
+            <View style={styles.inputSearch}>
+              {showSearch ? (
+                <TextInput
+                  onChangeText={handleTextDebounce}
+                  placeholder="Search city"
+                  placeholderTextColor={"lightgray"}
+                  style={styles.input}
+                />
+              ) : null}
 
-      <TouchableOpacity
-        style={styles.searchBtn}
-        onPress={() => toggleSearch(!showSearch)}
-      >
-        <MagnifyingGlassIcon size="25" color="white" />
-      </TouchableOpacity>
-    </View>
-    {locations.length > 0 && showSearch ? (
-      <View style={styles.showSearch}>
-        {locations.map((loc, index) => {
-          let showBorder = index + 1 != locations.length;
-          let borderStyle = showBorder
-            ? { borderBottomWidth: 2, borderBottomColor: "gray" }
-            : {};
-          return (
-            <TouchableOpacity
-              onPress={() => handleLocation(loc)}
-              key={index}
-              style={[styles.showSearchTxt, borderStyle]}
-            >
-              <MapPinIcon size={20} color="gray" />
-              <Text style={styles.showTxt}>
-                {loc?.name}, {loc.country}
-              </Text>
-            </TouchableOpacity>
-          );
-        })}
-      </View>
-    ) : null}
-  </View>
-  {/* forcast section */}
-  <View style={styles.forecast}>
-    <Text style={styles.locationTxt}>
-      {location?.name},
-      <Text style={styles.locationTxt2}>{" " + location?.country}</Text>
-    </Text>
-    {/* weather image */}
-    <View style={styles.weatherImg}>
-      <Image
-        source={weatherImages[current?.condition?.text]}
-        //source={{uri:'https:'+current?.condition?.icon}}
-        //source={require("../assets/images/partlycloudy.png")}
-        style={styles.img}
-      />
-    </View>
-    {/* degree  celcius*/}
-    <View style={styles.degreeCelcius}>
-      <Text style={styles.celcius}>{current?.temp_c}&#176;</Text>
-      <Text style={styles.cloudy}>{current?.condition?.text}</Text>
-    </View>
-    {/* other status */}
-    <View style={styles.otherStatus}>
-      <View style={styles.statusRow}>
-        <Image
-          source={require("../assets/icons/wind.png")}
-          style={styles.statusIcon}
-        />
-        <Text style={styles.statusTxt}>{current?.wind_kph}km</Text>
-      </View>
-      <View style={styles.statusRow}>
-        <Image
-          source={require("../assets/icons/drop.png")}
-          style={styles.statusIcon}
-        />
-        <Text style={styles.statusTxt}>{current?.humidity}%</Text>
-      </View>
-      <View style={styles.statusRow}>
-        <Image
-          source={require("../assets/icons/sun.png")}
-          style={styles.statusIcon}
-        />
-        <Text style={styles.statusTxt}>{ weather?.forecast?.forecastday[0]?.astro?.sunrise }</Text>
-      </View>
-    </View>
-  </View>
-
-  {/* forecast for next day */}
-  <View style={styles.nextDay}>
-    <View style={styles.calendar}>
-      <CalendarDaysIcon size={22} color={"white"} />
-      <Text style={styles.calendarTxt}>Daily forecast</Text>
-    </View>
-    <ScrollView
-      horizontal
-      contentContainerStyle={{ paddingHorizontal: 15 }}
-      showsHorizontalScrollIndicator={false}
-    >
-      {weather?.forecast?.forecastday?.map((item, index) => {
-        const date = new Date(item.date);
-        const options = { weekday: "long" };
-        let dayName = date.toLocaleDateString("en-US", options);
-        dayName = dayName.split(",")[0];
-        return (
-          <View key={index} style={styles.week}>
-            <Image
-              source={weatherImages[item?.day?.condition?.text]}
-              //source={require("../assets/images/heavyrain.png")}
-              style={styles.weerkImg}
-            />
-            <Text style={styles.weekTxt}>{dayName}</Text>
-            <Text style={styles.weekCelcium}>
-              {item?.day?.avgtemp_c}&#176;
-            </Text>
+              <TouchableOpacity
+                style={styles.searchBtn}
+                onPress={() => toggleSearch(!showSearch)}
+              >
+                <MagnifyingGlassIcon size="25" color="white" />
+              </TouchableOpacity>
+            </View>
+            {locations.length > 0 && showSearch ? (
+              <View style={styles.showSearchBox}>
+                {locations.map((loc, index) => {
+                  let showBorder = index + 1 != locations.length;
+                  let borderStyle = showBorder
+                    ? { borderBottomWidth: 2, borderBottomColor: "gray" }
+                    : {};
+                  return (
+                    <TouchableOpacity
+                      onPress={() => handleLocation(loc)}
+                      key={index}
+                      style={[styles.showSearchTxt, borderStyle]}
+                    >
+                      <MapPinIcon size={20} color="gray" />
+                      <Text style={styles.showTxt}>
+                        {loc?.name}, {loc.country}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+            ) : null}
           </View>
-        );
-      })}
-    </ScrollView>
-  </View>
-</SafeAreaView>
-) }
-
+          {/* forcast section */}
+          <View style={styles.forecast}>
+            <Text style={styles.locationTxt}>
+              {location?.name},
+              <Text style={styles.locationTxt2}>{" " + location?.country}</Text>
+            </Text>
+            <View style={styles.weatherImg}>
+              <Image
+                source={weatherImages[current?.condition?.text]}
+                style={styles.img}
+              />
+            </View>
+            <View style={styles.degreeCelcius}>
+              <Text style={styles.celcius}>{current?.temp_c}&#176;</Text>
+              <Text style={styles.cloudy}>{current?.condition?.text}</Text>
+            </View>
+            <View style={styles.otherStatus}>
+              <View style={styles.statusRow}>
+                <Image
+                  source={require("../assets/icons/wind.png")}
+                  style={styles.statusIcon}
+                />
+                <Text style={styles.statusTxt}>{current?.wind_kph}km</Text>
+              </View>
+              <View style={styles.statusRow}>
+                <Image
+                  source={require("../assets/icons/drop.png")}
+                  style={styles.statusIcon}
+                />
+                <Text style={styles.statusTxt}>{current?.humidity}%</Text>
+              </View>
+              <View style={styles.statusRow}>
+                <Image
+                  source={require("../assets/icons/sun.png")}
+                  style={styles.statusIcon}
+                />
+                <Text style={styles.statusTxt}>
+                  {weather?.forecast?.forecastday[0]?.astro?.sunrise}
+                </Text>
+              </View>
+            </View>
+          </View>
+          <View style={styles.nextDay}>
+            <View style={styles.calendar}>
+              <CalendarDaysIcon size={22} color={"white"} />
+              <Text style={styles.calendarTxt}>Daily forecast</Text>
+            </View>
+            <ScrollView
+              horizontal
+              contentContainerStyle={{ paddingHorizontal: 15 }}
+              showsHorizontalScrollIndicator={false}
+            >
+              {weather?.forecast?.forecastday?.map((item, index) => {
+                const date = new Date(item.date);
+                const options = { weekday: "long" };
+                let dayName = date.toLocaleDateString("en-US", options);
+                dayName = dayName.split(",")[0];
+                return (
+                  <View key={index} style={styles.week}>
+                    <Image
+                      source={weatherImages[item?.day?.condition?.text]}
+                      style={styles.weekImg}
+                    />
+                    <Text style={styles.weekTxt}>{dayName}</Text>
+                    <Text style={styles.weekCelcium}>
+                      {item?.day?.avgtemp_c}&#176;
+                    </Text>
+                  </View>
+                );
+              })}
+            </ScrollView>
+          </View>
+        </SafeAreaView>
+      )}
     </View>
   );
 }
@@ -222,18 +206,28 @@ const styles = StyleSheet.create({
     flex: 1,
     position: "relative",
   },
-  backg: {
+  backImage: {
     position: "absolute",
     height: "100%",
     width: "100%",
   },
-  seach: {
+  search: {
     height: "7%",
     marginTop: 20,
     marginLeft: 16,
     marginRight: 16,
     position: "relative",
     zIndex: 50,
+  },
+  loadingScreen: {
+    flex: 1,
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  loadingTxt: {
+    color: "white",
+    fontSize: 36,
   },
   inputSearch: {
     flexDirection: "row",
@@ -252,7 +246,7 @@ const styles = StyleSheet.create({
     padding: 6,
     backgroundColor: "rgba(255,255,255,0.3)",
   },
-  showSearch: {
+  showSearchBox: {
     position: "absolute",
     width: "100%",
     backgroundColor: "darkgray",
@@ -271,7 +265,6 @@ const styles = StyleSheet.create({
     color: "black",
     marginLeft: 4,
   },
-  // forecast section
   forecast: {
     flexDirection: "column",
     justifyContent: "space-around",
@@ -283,15 +276,14 @@ const styles = StyleSheet.create({
   locationTxt: {
     color: "white",
     textAlign: "center",
-    fontSize:36, //text-2xl
+    fontSize: 36,
     fontWeight: "bold",
   },
   locationTxt2: {
-    fontSize: 24, //text*lg
-    fontWeight: "600", //font-semibold
+    fontSize: 24,
+    fontWeight: "600",
     color: "gray",
   },
-  // weher img
   weatherImg: {
     flexDirection: "row",
     justifyContent: "center",
@@ -300,9 +292,7 @@ const styles = StyleSheet.create({
     width: 150,
     height: 150,
   },
-  // degree celcius
   degreeCelcius: {
-    //flex:1,
     flexDirection: "column",
     justifyContent: "center",
     alignItems: "center",
@@ -316,14 +306,12 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   cloudy: {
-    fontSize: 15, // "text-xl"
-    fontWeight:'600',
-    color: "white", // "text-white"
-    letterSpacing: 2, // "tracking-widest"
+    fontSize: 15,
+    fontWeight: "600",
+    color: "white",
+    letterSpacing: 2,
     textAlign: "center",
-    //marginBottom: 10,
   },
-  // other status
   otherStatus: {
     flexDirection: "row",
     gap: 40,
@@ -345,7 +333,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "600",
   },
-  // next day
   calendarTxt: {
     color: "white",
     fontSize: 16,
@@ -371,10 +358,9 @@ const styles = StyleSheet.create({
     borderRadius: 25,
     paddingVertical: 12,
     marginRight: 12,
-    //padding:6,
     backgroundColor: "rgba(255,255,255,0.2)",
   },
-  weerkImg: {
+  weekImg: {
     height: 50,
     width: 50,
   },
@@ -387,14 +373,4 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: "600",
   },
-  loading:{
-    flex:1,
-    flexDirection:'row',
-    justifyContent:'center',
-    alignItems:'center'
-  },
-  loadingTxt:{
-    color:'white',
-    fontSize:36
-  }
 });
