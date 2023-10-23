@@ -130,13 +130,13 @@ export default function HomeScreen() {
               {location?.name},
               <Text style={styles.locationTxt2}>{" " + location?.country}</Text>
             </Text>
-            <View style={styles.weatherImg}>
+            <View style={styles.weatherImgBox}>
               <Image
                 source={weatherImages[current?.condition?.text]}
-                style={styles.img}
+                style={styles.weatherImg}
               />
             </View>
-            <View style={styles.degreeCelcius}>
+            <View style={styles.temperature}>
               <Text style={styles.celcius}>{current?.temp_c}&#176;</Text>
               <Text style={styles.cloudy}>{current?.condition?.text}</Text>
             </View>
@@ -182,13 +182,13 @@ export default function HomeScreen() {
                 let dayName = date.toLocaleDateString("en-US", options);
                 dayName = dayName.split(",")[0];
                 return (
-                  <View key={index} style={styles.week}>
+                  <View key={index} style={styles.dayWeather}>
                     <Image
                       source={weatherImages[item?.day?.condition?.text]}
-                      style={styles.weekImg}
+                      style={styles.precipitImg}
                     />
-                    <Text style={styles.weekTxt}>{dayName}</Text>
-                    <Text style={styles.weekCelcium}>
+                    <Text style={styles.dayTxt}>{dayName}</Text>
+                    <Text style={styles.dayTemperature}>
                       {item?.day?.avgtemp_c}&#176;
                     </Text>
                   </View>
@@ -212,7 +212,7 @@ const styles = StyleSheet.create({
     width: "100%",
   },
   search: {
-    height: "7%",
+    height: "8%",
     marginTop: 20,
     marginLeft: 16,
     marginRight: 16,
@@ -227,23 +227,24 @@ const styles = StyleSheet.create({
   },
   loadingTxt: {
     color: "white",
-    fontSize: 36,
+    fontSize: 42,
   },
   inputSearch: {
     flexDirection: "row",
-    justifyContent: "flex-end",
     alignItems: "center",
-    borderRadius: 99,
+    borderRadius: 100,
     backgroundColor: "rgba(255,255,255,0.2)",
+    height: 50,
   },
   input: {
     flex: 1,
-    padding: 12,
+    padding: 15,
     paddingBottom: 9,
   },
   searchBtn: {
-    borderRadius: 99,
-    padding: 6,
+    marginLeft: "87%",
+    borderRadius: 50,
+    padding: 10,
     backgroundColor: "rgba(255,255,255,0.3)",
   },
   showSearchBox: {
@@ -267,11 +268,10 @@ const styles = StyleSheet.create({
   },
   forecast: {
     flexDirection: "column",
-    justifyContent: "space-around",
     alignItems: "center",
     margin: 16,
-    gap: 40,
-    marginBottom: 40,
+    gap: 25,
+    marginBottom: 20,
   },
   locationTxt: {
     color: "white",
@@ -284,19 +284,18 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: "gray",
   },
-  weatherImg: {
+  weatherImgBox: {
     flexDirection: "row",
     justifyContent: "center",
   },
-  img: {
+  weatherImg: {
     width: 150,
     height: 150,
   },
-  degreeCelcius: {
+  temperature: {
     flexDirection: "column",
     justifyContent: "center",
     alignItems: "center",
-    margin: 5,
     paddingTop: 2,
   },
   celcius: {
@@ -306,7 +305,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   cloudy: {
-    fontSize: 15,
+    fontSize: 20,
     fontWeight: "600",
     color: "white",
     letterSpacing: 2,
@@ -348,10 +347,10 @@ const styles = StyleSheet.create({
     marginRight: 16,
     marginBottom: 20,
   },
-  week: {
+  dayWeather: {
     flex: 1,
     justifyContent: "center",
-    gap: 8,
+    gap: 5,
     alignItems: "center",
     width: 100,
     height: 120,
@@ -360,15 +359,15 @@ const styles = StyleSheet.create({
     marginRight: 12,
     backgroundColor: "rgba(255,255,255,0.2)",
   },
-  weekImg: {
+  precipitImg: {
     height: 50,
     width: 50,
   },
-  weekTxt: {
+  dayTxt: {
     color: "white",
     fontSize: 14,
   },
-  weekCelcium: {
+  dayTemperature: {
     color: "white",
     fontSize: 20,
     fontWeight: "600",
